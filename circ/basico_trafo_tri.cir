@@ -1,0 +1,94 @@
+*Circuito trifasico com transformador
+
+* .-----------------------------.
+* |     Circuito Trifasico      |
+* `-----------------------------'
+
+* .------------------------------------------------------------.
+* |                               Pa          Sa   ___ Ra      |
+* |   .-----------------------------------. ,-----|___|----.   |
+* |   |                                   )|(              |   |
+* |   |                                   )|(              |   |
+* |  /+\                             .----' '---.          |   |
+* | (   ) Va                     Pb  |        Sb|  ___ Rb  |   |
+* |  \-/  <0    .--------------------)----. ,---)-|___|----o   |
+* |   |         |                    |    )|(   |          |   |
+* |   |         |                    |    )|(   |          |   |
+* |  ===       /+\                   o----' '---o          |   |
+* |  GND      (   ) Vb           Pc  |        Sc|  ___ Rc  |   |
+* |            \-/  <-120 .----------)----. ,---)-|___|----o   |
+* |             |         |          |    )|(   |          |   |
+* |             |        /+\         |    )|(   |          |   |
+* |            ===      (   ) Vc     o----' '---o----------'   |
+* |            GND       \-/  <120   |          neutro         |
+* |                       |          |                         |
+* |                       |          |                         |
+* |                      ===        ===                        |
+* |                      GND        GND                        |
+* `------------------------------------------------------------'
+
+* .------------------------------.
+* |      Parametros Gerais       |
+* `------------------------------'
+.param freq = 60
+.param tensao = 220
+.param resist = 100
+.param relacao = 10
+
+* .-----------------------.
+* | Descricao do circuito |
+* `-----------------------'
+
+*Fontes
+Va pa 0 sin(0 {tensao} {freq} 0 0 0)
+Vb pb 0 sin(0 {tensao} {freq} 0 0 -120)
+Vc pc 0 sin(0 {tensao} {freq} 0 0 120)
+
+*Resistores
+Ra sa neutro {resist}
+Rb sb neutro {resist}
+Rc sc neutro {resist}
+
+*Transformadores
+Xta pa 0 sa neutro trafo
+Xtb pb 0 sb neutro trafo
+Xtc pc 0 sc neutro trafo
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+*------- Nao tem -----------
+* .---------------------------------------.
+* |Subcircuito: Transformador             |
+* `---------------------------------------'
+.subckt trafo p1 p2 s1 s2
+Fp p2 p1 Vis {1/relacao}
+Es node1 s2 p1 p2 {1/relacao}
+Vis node1 s1 0
+risol p2 s2 1meg
+.ends
+
+
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+
+*passo de amostragem = (32pts na freq atual), tempo total de 35 ms
+.TRAN {1/(freq*32)} 35m
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+
+.control
+run ; executa a simulacao
+plot v(pa) v(pb) v(pc) ; plota as tensoes do primario
+plot (v(sa)-v(neutro)) (v(sb)-v(neutro)) (v(sc)-v(neutro)) ; plota as tensoes do sec
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

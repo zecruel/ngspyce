@@ -1,0 +1,64 @@
+*Circuito Basico 2
+
+* .-----------------------------.
+* | Circuito inicial do NgSpice |
+* `-----------------------------'
+*     .----------------------.
+*     |     node1            |
+*     |      o---------.     |
+*     |      |         |     |
+*     |      |         |     |
+*     |     /+\       .-.    |
+*     | Vi (   )      | | RL |
+*     |     \-/       | |    |
+*     |      |        '-'    |
+*     |      |         |     |
+*     |      |         |     |
+*     |     ===       ===    |
+*     |     GND       GND    |
+*     '----------------------'
+
+* .------------------------------.
+* |      Parametros Gerais       |
+* `------------------------------'
+.param freq = 60
+
+* .-----------------------.
+* | Descricao do circuito |
+* `-----------------------'
+
+*Fonte de 3v/60Hz ligada entre o node1 e o GND e defasagem de 90 graus
+Vi node1 0 sin(0 3 freq 0 0 90)
+RL node1 0 10 ;Resistor de 10 ohms ligado entre o node1 e o GND
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+*------- Nao tem -----------
+* .---------------------------------------.
+* |Subcircuito:                           |
+* |                                       |
+* `---------------------------------------'
+*------- Nao tem -----------
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+
+*passo de amostragem = (32pts na freq atual), tempo total de 35ms
+.TRAN {1/(freq*32)} 35m
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+
+.control
+run ; executa a simulacao
+plot v(node1) i(vi) ; plota a tensao em node1 e a corrente da fonte
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

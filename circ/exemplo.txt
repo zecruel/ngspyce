@@ -1,0 +1,24 @@
+*CMOS Inverter Transient example
+	
+V1 vdd 0 3V
+v2 vss 0 0V
+v3 in vss pulse(0 3 0 100p 100p 1.9n 4n) 
+
+Mp1 vdd in out vdd pch l=0.35u w=20.0u
+Mn1 vss in out vss nch l=0.35u w=10.0u
+
+Cload out vss 200f
+
+.MODEL nch NMOS
+.MODEL pch PMOS
+
+.TRAN 10p 12n
+
+.control
+run
+*plot v(in), V(out)
+*gnuplot exemplo v(in), v(out)
+wrdata teste.txt v(in), v(out)
+quit
+.endc
+.end

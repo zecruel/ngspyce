@@ -1,0 +1,57 @@
+*Circuito Basico 1
+
+* .-----------------------------.
+* | Circuito inicial do NgSpice |
+* `-----------------------------'
+*     .----------------------.
+*     |     node1            |
+*     |      o---------.     |
+*     |      |         |     |
+*     |      |         |     |
+*     |     /+\       .-.    |
+*     | Vi (   )      | | RL |
+*     |     \-/       | |    |
+*     |      |        '-'    |
+*     |      |         |     |
+*     |      |         |     |
+*     |     ===       ===    |
+*     |     GND       GND    |
+*     '----------------------'
+
+* .-----------------------.
+* | Descricao do circuito |
+* `-----------------------'
+
+Vi node1 0 3v ;Fonte de 3v ligada entre o node1 e o GND
+RL node1 0 1k ;Resistor de 1k ligado entre o node1 e o GND
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+*------- Nao tem -----------
+* .---------------------------------------.
+* |Subcircuito:                           |
+* |                                       |
+* `---------------------------------------'
+*------- Nao tem -----------
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+
+.TRAN 10p 12n ;passo de 10ps e tempo total de 12ns
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+
+.control
+run ; executa a simulacao
+plot v(node1) ; plota a tensao da simulacao
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

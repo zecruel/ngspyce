@@ -1,0 +1,68 @@
+*Circuito Basico 3
+
+* testa o uso de chave controlada por corrente, emulando
+* um retificador meia-onda
+
+* .------------------------------.
+* |      Parametros Gerais       |
+* `------------------------------'
+.param freq = 60
+
+* .-----------------------.
+* | Descricao do circuito |
+* `-----------------------'
+*Fonte de 30v/60Hz ligada entre o node1 e o GND
+*condicao inicial  = 0V
+Vi node1 0 dc 0 sin(0 30 freq 0 0)
+
+*scr
+xscr1 node1 node2 node3 scr
+
+*resistencia de carga
+RL node2 0 10 ;Resistor de 10 ohms ligado entre o node2 e o GND
+
+*pulsos do scr, largura = 1ms, delay = 2ms, freq = 2* a do sistema
+vdisp node3 0 dc 0 pulse(0 2 2m 0 0 1m {1/(freq*2)})
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+
+.model chave1 sw vt=1v ron=1m roff=100k
+.model chave2 csw it=1m ron=1m roff=100k
+.model diodo1 d IS=1e-14 n=1
+
+* .---------------------------------------.
+* |Subcircuito:                           |
+* |                                       |
+* `---------------------------------------'
+.subckt scr anodo catodo gate
+sgate anodo ndiodo gate 0 chave1 off
+wcorr anodo ndiodo vsensor chave2 off
+d1 ndiodo nsensor diodo1
+vsensor nsensor catodo 0
+r1 gate 0 10k
+.ends
+
+
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+*ATENCAO: Sempre considerar as condicoes iniciais (parametro uic)
+*passo de amostragem = (32pts na freq atual), tempo total de 35ms
+.TRAN {1/(freq*32)} 35m uic
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+.control
+run ; executa a simulacao
+plot v(node1) v(node3) v(node2) ; plota a tensao em node1 e a corrente da fonte
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

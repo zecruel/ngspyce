@@ -1,0 +1,111 @@
+*Circuito com TRIAC indutivo 3 com medicao
+
+* .------------------------------.
+* |      Parametros Gerais       |
+* `------------------------------'
+.param freq = 60
+.param cond = 10 ; corrente de conducao minima
+
+* .---------------------------------.
+* | Descricao do circuito principal |
+* `---------------------------------'
+*Fonte de 15kV/60Hz ligada entre o node1 e o GND
+*condicao inicial  = 0V
+Vi node1 0 dc 0 sin(0 15k freq 0 0)
+
+*triac
+xtriac1 node1 node2 node6 triac
+
+*snuber
+rs node1 nodeS 1k
+cs nodeS node2 0.11u
+
+*resistencia de carga
+RL node2 0 1meg ;Resistor de 10mega ohms ligado entre o node2 e o GND
+
+*indutor de carga
+L1 node2 node4 13.44m ;indutancia de 13.44mH
+r1 node4 0 0.011	;resistencia de 0.011 ohm
+
+vang node5 0 pwl(0 165 4 90)
+rdisp node6 0 1k
+xdisp node5 node1 0 node6 disparo
+
+amed %vnam(vi) node7 medidor
+rmed node7 0 1k
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+
+.model chave1 sw vt=0.5 ron=0.01 roff=10meg
+.model chave2 sw vt=0.5 ron=0.01 roff=10meg
+.model medidor rms(freq = {freq}, pontos = 32)
+
+* .---------------------------------------.
+* |Subcircuito: TRIAC                     |
+* |Modela uma valvula CA, derivada do SCR |
+* `---------------------------------------'
+.subckt triac anodo catodo gate
+sgate anodo nsensor gate 0 chave1 off ;chave que inicia a conducao
+scorr1 anodo nsensor nver 0 chave1 off ;chave que sela a conducao
+vsensor nsensor catodo 0
+r1 gate 0 10k
+econd nver 0 value = {(abs(i(vsensor)))>cond} ;avalia o modulo de corrente
+rcond nver 0 1
+.ends
+
+* .---------------------------------------.
+* |Subcircuito: Disparo                   |
+* | Modela o disparo de uma valvula CA    |
+* `---------------------------------------'
+.subckt disparo ang in1 in2 out
+*resistores de entrada
+rang ang 0 1k
+rreset in1 in2 1k
+* pulso de sincronismo com a tensao da rede
+ereset nreset 0 value = {abs(v(in1,in2)) < 3k}
+*--------------- Integrador ----------------
+* gera o sinal de rampa (dente de serra)
+* Constantes para integracao -> R1, C1 e Vconst
+* A saida do integradaor pode ser determinada por Vo = -Vconst * t / (C1 * R1)
+r1 nconst nei 1k
+c1 nei nint 1u
+vconst nconst 0 {-180*1m*freq*2}
+* chave que reseta o integrador ->sincronismo
+sreset nei nint nreset 0 chave2 off
+* modela um Amp Op Rin = 1meg, ganho = 100k, Rout = 1 ohm
+rent nconst 0 1meg
+eganho nsai 0 nei 0 100k
+rsai nsai nint 1
+*-------------- fim do integrador --------
+*comparador de saida-> integrador > angulo
+ecomp out 0 table {v(nint, ang)} (-1m, 0) (1m, 1)
+.ends
+
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+*ATENCAO: Sempre considerar as condicoes iniciais (parametro uic)
+*passo de amostragem = (360pts na freq atual), tempo total de 4s
+.save all
+.TRAN {1/(freq*360)} 4 uic
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+.control
+save all
+run ; executa a simulacao
+plot v(node7) i(L1)
+*plot v(node1) v(node6)*10 v(node7) i(L1) ; plota a tensao da fonte, os pulsos de disparo, a tensao e corrente do indutor
+*plot v(node1) v(xdisp.nint) v(node6)*10 ; plota a tensao de entrada, a rampa e o sinal de disparo
+
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

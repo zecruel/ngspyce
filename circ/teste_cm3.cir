@@ -1,0 +1,44 @@
+* teste da geracao de CM -> RMS
+
+* .---------------------------------.
+* | Descricao do circuito principal |
+* `---------------------------------'
+vent 2 1 dc 0 sin(0 1.4142 1k)
+vruido 1 0 dc 0 trnoise(0.2 1e-5 0 0) ;ruido branco, ampl = 0.2, amostr = 10us
+amed 2 3 medidor
+rzin 2 0 10k
+rsaida 3 0 10k
+
+*-------- Opcoes de entrada de corrente no modelo -----------------
+*amed %i(4) 3 medidor ; corrente do no 4 para a terra -> CUIDADO: funciona como um amperimetro
+*amed %vnam(vent) 3 medidor ;corrente da fonte vent
+*amed %id(2 4) 3 medidor ; corrente entre os nos 2 e 4 para a terra -> CUIDADO: funciona como um amperimetro
+*--------------------------------------------------------------------------
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+.model medidor rms(freq = 1k, pontos = 32)
+
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+*ATENCAO: Sempre considerar as condicoes iniciais (parametro uic)
+*passo de amostragem = 10us, tempo total de 4ms
+.tran 1e-5 10e-3 uic
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+.control
+run ; executa a simulacao
+plot v(3) v(2)
+
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

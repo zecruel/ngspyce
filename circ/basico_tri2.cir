@@ -1,0 +1,114 @@
+*Circuito trifasico 2
+
+* .-----------------------------.
+* |     Circuito Trifasico      |
+* `-----------------------------'
+
+* .------------------------------------------------------------.
+* |                               Pa          Sa   ___ Ra      |
+* |   .-----------------------------------. ,-----|___|----.   |
+* |   |                                   )|(              |   |
+* |   |                                   )|(              |   |
+* |  /+\                             .----' '---.          |   |
+* | (   ) Va                     Pb  |        Sb|  ___ Rb  |   |
+* |  \-/  <0    .--------------------)----. ,---)-|___|----o   |
+* |   |         |                    |    )|(   |          |   |
+* |   |         |                    |    )|(   |          |   |
+* |  ===       /+\                   o----' '---o          |   |
+* |  GND      (   ) Vb           Pc  |        Sc|  ___ Rc  |   |
+* |            \-/  <-120 .----------)----. ,---)-|___|----o   |
+* |             |         |          |    )|(   |          |   |
+* |             |        /+\         |    )|(   |          |   |
+* |            ===      (   ) Vc     o----' '---o----------'   |
+* |            GND       \-/  <120   |          neutro         |
+* |                       |          |                         |
+* |                       |          |                         |
+* |                      ===        ===                        |
+* |                      GND        GND                        |
+* `------------------------------------------------------------'
+
+* .------------------------------.
+* |      Parametros Gerais       |
+* `------------------------------'
+.param freq = 60
+.param tensao = 220
+.param resist = 100
+.param relacao = 10
+
+* .-----------------------.
+* | Descricao do circuito |
+* `-----------------------'
+
+*Fontes (condicao inicial igual a zero)
+Va pa 0 dc 0 sin(0 {tensao} {freq} 0 0 0)
+Vb pb 0 dc 0 sin(0 {tensao} {freq} 0 0 -120)
+Vc pc 0 dc 0 sin(0 {tensao} {freq} 0 0 120)
+
+*Resistores (carga equilibrada)
+Ra sa neutro {resist}
+Rb sb neutro {resist}
+Rc sc neutro {resist}
+
+*Transformadores (ligacao estrela-delta)
+Xta pa 0 sa sb trafo
+Xtb pb 0 sb sc trafo
+Xtc pc 0 sc sa trafo
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+*------- Nao tem -----------
+* .---------------------------------------.
+* |Subcircuito: Transformador             |
+* `---------------------------------------'
+* .----------------------------------------.
+* |                                        |
+* |      R1                       R2       |
+* | P1   ___   node1      node2  ___    S1 |
+* | o---|___|--o            o---|___|---o  |
+* |            |            |              |
+* |            |            |              |
+* |            C|     K     C|             |
+* |         L1 C| +-------+ C| L2          |
+* |            C|           C|             |
+* |            |            |              |
+* | P2         |            |           S2 |
+* | o----------'            '-----------o  |
+* |                                        |
+* '----------------------------------------'
+.subckt trafo p1 p2 s1 s2
+R1 p1 node1 0.1 ;resit primario = 0.1 ohm
+R2 node2 s1 0.01 ;resit sec = 0.01 ohm
+L1 node1 p2 2000 ;indutancia prim = 2000
+L2 node2 s2 20 ;indut sec = 20 ou (L1/(rel^2))
+K L1 L2 0.9999 ;fator de acoplamento entre as bobinas
+
+.ends
+
+
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+
+*passo de amostragem = (32pts na freq atual), tempo total de 35 ms
+*ATENCAO: Sempre considerar as condicoes iniciais (parametro uic)
+.TRAN {1/(freq*32)} 35m uic
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+
+.control
+run ; executa a simulacao
+plot v(pa) v(pb) v(pc) ; plota as tensoes do primario
+plot (v(sa)-v(neutro)) (v(sb)-v(neutro)) (v(sc)-v(neutro)) ; plota as tensoes do sec
+plot i(va) l.xta.l2#branch i(vb) l.xtb.l2#branch i(vc) l.xtc.l2#branch ;plota as correntes
+plot (v(pa)) (v(sa)-v(neutro))*10; compara as tensoes de primario e sec
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

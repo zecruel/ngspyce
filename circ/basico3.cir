@@ -1,0 +1,62 @@
+*Circuito Basico 3
+
+* testa o uso de chave controlada por corrente, emulando
+* um retificador meia-onda
+
+* .------------------------------.
+* |      Parametros Gerais       |
+* `------------------------------'
+.param freq = 60
+
+* .-----------------------.
+* | Descricao do circuito |
+* `-----------------------'
+*Fonte de 3v/60Hz ligada entre o node1 e o GND e defasagem de 90 graus
+*condicao inicial  = 0V
+Vi node1 0 dc 0 sin(0 3 freq 0 0 90)
+
+*ponto de medicao
+Vmed node1 node2 0; mede a corrente que passa entre o node1 e o 2
+
+*chave controlada
+w1 node2 node3 vmed wswitch off
+
+*resistencia de carga
+RL node3 0 10 ;Resistor de 10 ohms ligado entre o node1 e o GND
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+*chave controlada cofigurada para:
+* corrente para conducao = 100uA
+* resistencia de conducao = 1mili-ohm
+* resistencia com chave aberta = 10k ohm
+.model wswitch csw it=100u ron=1m roff=10k
+
+* .---------------------------------------.
+* |Subcircuito:                           |
+* |                                       |
+* `---------------------------------------'
+*------- Nao tem -----------
+
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+*ATENCAO: Sempre considerar as condicoes iniciais (parametro uic)
+*passo de amostragem = (32pts na freq atual), tempo total de 35ms
+.TRAN {1/(freq*32)} 35m uic
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+.control
+run ; executa a simulacao
+plot v(node1) i(vi) ; plota a tensao em node1 e a corrente da fonte
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

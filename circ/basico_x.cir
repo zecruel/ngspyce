@@ -1,0 +1,47 @@
+*Circuito Basico para teste do XSpice
+
+* .-----------------------.
+* | Descricao do circuito |
+* `-----------------------'
+
+Vin 1 0 0.0 ac 1.0 sin(0 1 1k)
+
+ccouple 1 in 10uF
+rzin in 0 19.35k
+*
+aamp in aout gain_block
+*
+rzout aout coll 3.9k
+rbig coll 0 1e12
+
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+.model gain_block gain(gain=-3.9 out_offset =7.003)
+* .---------------------------------------.
+* |Subcircuito:                           |
+* |                                       |
+* `---------------------------------------'
+*------- Nao tem -----------
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+
+.TRAN 1e-5 2e-3 ;passo de 10ps e tempo total de 12ns
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+
+.control
+run ; executa a simulacao
+plot coll ; plota a tensao da simulacao
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end

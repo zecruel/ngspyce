@@ -1,0 +1,73 @@
+*Circuito com TRIAC indutivo
+
+* testa o uso de chave controlada por corrente, emulando
+* um retificador meia-onda
+
+* .------------------------------.
+* |      Parametros Gerais       |
+* `------------------------------'
+.param freq = 60
+.param cond = .5 ; corrente de conducao minima
+
+* .-----------------------.
+* | Descricao do circuito |
+* `-----------------------'
+*Fonte de 30v/60Hz ligada entre o node1 e o GND
+*condicao inicial  = 0V
+Vi node1 0 dc 0 sin(0 30 freq 0 0)
+
+*triac
+xtriac1 node1 node2 node3 triac
+
+*resistencia de carga
+RL node2 0 1k ;Resistor de 1k ohms ligado entre o node2 e o GND
+
+*indutor de carga
+L1 node2 node4 1m ;indutancia de 1mH
+r1 node4 0 .1	;resistencia de .1 ohm
+
+*pulsos do scr, largura = 1ms, angulo = 95, freq = 2* a do sistema
+vdisp node3 0 dc 0 pulse(0 2 {(1/freq)*(95/360)} 0 0 1m {1/(freq*2)})
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+
+.model chave1 sw vt=1v ron=1m roff=100k
+
+* .---------------------------------------.
+* |Subcircuito:                           |
+* |                                       |
+* `---------------------------------------'
+.subckt triac anodo catodo gate
+sgate anodo nsensor gate 0 chave1 off ;chave que inicia a conducao
+scorr1 anodo nsensor nver 0 chave1 off ;chave que sela a conducao
+vsensor nsensor catodo 0
+r1 gate 0 10k
+
+econd nver 0 value = {(abs(i(vsensor)))>cond} ;avalia o modulo de corrente
+rcond nver 0 1
+.ends
+
+
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+*ATENCAO: Sempre considerar as condicoes iniciais (parametro uic)
+*passo de amostragem = (360pts na freq atual), tempo total de 35ms
+.TRAN {1/(freq*360)} 35m uic
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+.control
+run ; executa a simulacao
+plot v(node1) v(node3) v(node2) i(L1) ; plota a tensao em node1 e a corrente da fonte
+*wrdata teste.txt v(node1) ; salva o resultado da simulacao em teste.txt
+*quit ;sai do programa
+.endc
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end
