@@ -123,6 +123,7 @@ class app:
 	log = Queue.Queue() #o log vai para uma pilha queue
 	i_vetores ={} #dicionario que lista o nome e o indice de cada vetor disponivel
 	vetores ={} #dicionario que lista o nome  e a estrutura vecvalues de cada vetor disponivel
+	em_exec = True #indica que o ngspice esta em execucao
 	
 	def __init__(self):
 		#------------------------------------------------------------------------------------
@@ -154,7 +155,7 @@ class app:
 		os.chdir(curr_dir_before)
 		
 		# inicializa o NGspice
-		self.spice.ngSpice_Init(self.printfcn, self.statfcn, self.spice_exit, self.data_rt, self.init_rt, None, None)
+		self.spice.ngSpice_Init(self.printfcn, self.statfcn, self.spice_exit, self.data_rt, self.init_rt, self.bg_running, None)
 		
 		# configura o regex
 		self.end_regex = re.compile('.end', flags = re.IGNORECASE)
@@ -298,6 +299,14 @@ class app:
 	    #app.log.put('INIT '+nome+titulo+data+tipo)
 	    #app.log.put('Vetor '+ repr(app.i_vetores))
 	    
+	    return 0
+	
+	@staticmethod
+	@CFUNCTYPE(c_int, c_bool, c_int, c_void_p)
+	def bg_running(run, id, ret): 
+	    """indicate if background thread is running"""
+	    app.em_exec = run
+	    #print run
 	    return 0
 
 	#--------------------------------------------------------------------------------

@@ -42,64 +42,47 @@ class Janela(threading.Thread):
 		
 		#------------------------------------------
 		#Cria os botões
-		self.b_vetores = tk.Button(self.raiz, text='Lista Vetores',
-							command=self.ng_vetores)
-		self.b_vetores.grid(row=3, column=0)
-		
-		self.b_plots = tk.Button(self.raiz, text='Lista Plots',
-							command=self.ng_plots)
-		self.b_plots.grid(row=2, column=0)
-		
-		self.b_ver_vetor = tk.Button(self.raiz, text='Imprime Vetor',
-							command=self.ng_vetor)
-		self.b_ver_vetor.grid(row=5, column=2)
-		
-		self.b_add_vetor = tk.Button(self.raiz, text='->',
-							command=self.add_vet)
-		self.b_add_vetor.grid(row=4, column=2)
-		
-		self.b_sub_vetor = tk.Button(self.raiz, text='<-',
-							command=self.sub_vet)
-		self.b_sub_vetor.grid(row=6, column=2)
-		
-		self.b_plota = tk.Button(self.raiz, text='Plota Vetores',
-							command=self.plotar)
-		self.b_plota.grid(row=3, column=3)
 		
 		self.b_abre_circ = tk.Button(self.raiz, text='Circuito',
 							command=self.ng_abre_circ)
 		self.b_abre_circ.grid(row=1, column=0)
 		
-		self.b_exec = tk.Button(self.raiz, text='Executa',
+		
+		
+		
+		
+		
+		#------ botoes de execucao ----------
+		
+		self.f_exec = ttk.Frame(self.raiz)
+		self.f_exec.grid(row=1, column=1)
+		self.b_exec = tk.Button(self.f_exec, text='Executa',
 							command=self.ng_exec)
-		self.b_exec.grid(row=1, column=1)
+		self.b_exec.grid(row=0, column=0)
 		
-		self.b_para = tk.Button(self.raiz, text='Parada',
+		self.b_para = tk.Button(self.f_exec, text='Parada',
 							command=self.ng_para)
-		self.b_para.grid(row=1, column=2)
+		self.b_para.grid(row=1, column=0)
 		
-		self.b_retoma = tk.Button(self.raiz, text='Retoma',
+		self.b_retoma = tk.Button(self.f_exec, text='Retoma',
 							command=self.ng_retoma)
-		self.b_retoma.grid(row=1, column=3)
+		self.b_retoma.grid(row=2, column=0)
+		
+		self.b_run = tk.Button(self.f_exec, bg = 'Green')
+		self.b_run.grid(row=0, column=1)
 		
 		#------------------------------------------
 		#Cria a area de texto de log
-		self.t_log_s = tk.Scrollbar(self.raiz)
-		self.t_log_s.grid(row=7, column=7, rowspan=2, sticky=tk.W+tk.E+tk.N+tk.S)
-		self.t_log = tk.Text(self.raiz, height=10, width=70)
-		self.t_log.grid(row=7, column=0, columnspan=6, rowspan=2)
+		self.f_log = ttk.Frame(self.raiz)
+		self.f_log.grid(row=7, column=0, columnspan=6, rowspan=2)
+		self.t_log_s = tk.Scrollbar(self.f_log)
+		self.t_log_s.grid(row=0, column=1, sticky=tk.W+tk.E+tk.N+tk.S)
+		self.t_log = tk.Text(self.f_log, height=10, width=70)
+		self.t_log.grid(row=0, column=0,)
 		self.t_log_s.config(command=self.t_log.yview)
 		self.t_log.config(yscrollcommand=self.t_log_s.set)
 		self.t_log.after(100, self.temporal) #atualiza a cada 100 ms
 		
-		#------------------------------------------
-		# Caixas de selecao
-		#self.vetor_atual = tk.StringVar()
-		#self.cb_vetores = ttk.Combobox(self.raiz, textvariable=self.vetor_atual)
-		#self.cb_vetores.grid(row=1, column=2)
-		
-		self.cb_plots = ttk.Combobox(self.raiz)
-		self.cb_plots.grid(row=2, column=1)
 		
 		#------------------------------------------
 		# entradas de texto
@@ -109,28 +92,67 @@ class Janela(threading.Thread):
 		self.e_comando.delete(0, tk.END)
 		self.e_comando.bind('<Return>', self.ng_comando)
 		
-		self.e_var = tk.Entry(self.raiz)
-		self.e_var.grid(row=2, column=3, sticky=tk.W)
+		#---------------- monitoramento real time
+		self.f_monit = tk.Frame(self.raiz, bd=2, relief=tk.RAISED)
+		self.f_monit.grid(row=1, column=2)
 		
-		self.e_monit = tk.Entry(self.raiz)
-		self.e_monit.grid(row=2, column=4, sticky=tk.W)
+		tk.Label(self.f_monit, text='Monitoramento Real-time:').grid(row=0, column=0, sticky=tk.W)
+		
+		tk.Label(self.f_monit, text='Variavel:').grid(row=1, column=0, sticky=tk.W)
+		self.e_var = tk.Entry(self.f_monit)
+		self.e_var.grid(row=2, column=0, sticky=tk.W)
+		
+		tk.Label(self.f_monit, text='Valor:').grid(row=1, column=1, sticky=tk.W)
+		self.e_monit = tk.Entry(self.f_monit)
+		self.e_monit.grid(row=2, column=1, sticky=tk.W)
 		self.e_monit.delete(0, tk.END)
 		
-
+		#------------plots disponiveis
+		self.f_plots = ttk.Frame(self.raiz)
+		self.f_plots.grid(row=3, column=0)
+		self.b_plots = tk.Button(self.f_plots, text='Lista Plots',
+							command=self.ng_plots)
+		self.b_plots.grid(row=0, column=0)
+		
+		self.cb_plots = ttk.Combobox(self.f_plots)
+		self.cb_plots.grid(row=1, column=0)
 		
 		#-------------------------------------------
-		# listas
-		self.l_vetores = tk.Listbox(self.raiz, selectmode='multiple')
-		self.l_vetores.grid(row=4, column=0, rowspan=3, sticky=tk.E+tk.N+tk.S)
-		self.l_vetores_s = tk.Scrollbar(self.raiz)
-		self.l_vetores_s.grid(row=4, column=1,rowspan=3, sticky=tk.W+tk.N+tk.S)
+		# Ferramentas de plotagem
+		self.f_plot = ttk.Frame(self.raiz)
+		self.f_plot.grid(row=3, column=1, columnspan=3, rowspan=2)
+		
+		self.b_vetores = tk.Button(self.f_plot, text='Lista Vetores',
+							command=self.ng_vetores)
+		self.b_vetores.grid(row=0, column=0)
+		
+		self.b_ver_vetor = tk.Button(self.f_plot, text='Imprime Vetor',
+							command=self.ng_vetor)
+		self.b_ver_vetor.grid(row=2, column=2)
+		
+		self.b_add_vetor = tk.Button(self.f_plot, text='->',
+							command=self.add_vet)
+		self.b_add_vetor.grid(row=1, column=2)
+		
+		self.b_sub_vetor = tk.Button(self.f_plot, text='<-',
+							command=self.sub_vet)
+		self.b_sub_vetor.grid(row=3, column=2)
+		
+		self.b_plota = tk.Button(self.f_plot, text='Plota Vetores',
+							command=self.plotar)
+		self.b_plota.grid(row=0, column=3)
+		
+		self.l_vetores = tk.Listbox(self.f_plot, selectmode='multiple')
+		self.l_vetores.grid(row=1, column=0, rowspan=3, sticky=tk.E+tk.N+tk.S)
+		self.l_vetores_s = tk.Scrollbar(self.f_plot)
+		self.l_vetores_s.grid(row=1, column=1,rowspan=3, sticky=tk.W+tk.N+tk.S)
 		self.l_vetores_s.config(command=self.l_vetores.yview)
 		self.l_vetores.config(yscrollcommand=self.l_vetores_s.set)
 		
-		self.l_plot = tk.Listbox(self.raiz, selectmode='multiple')
-		self.l_plot.grid(row=4, column=3, rowspan=3, sticky=tk.E+tk.N+tk.S)
-		self.l_plot_s = tk.Scrollbar(self.raiz)
-		self.l_plot_s.grid(row=4, column=4,rowspan=3, sticky=tk.W+tk.N+tk.S)
+		self.l_plot = tk.Listbox(self.f_plot, selectmode='multiple')
+		self.l_plot.grid(row=1, column=3, rowspan=3, sticky=tk.E+tk.N+tk.S)
+		self.l_plot_s = tk.Scrollbar(self.f_plot)
+		self.l_plot_s.grid(row=1, column=4,rowspan=3, sticky=tk.W+tk.N+tk.S)
 		self.l_plot_s.config(command=self.l_plot.yview)
 		self.l_plot.config(yscrollcommand=self.l_plot_s.set)
 		
@@ -247,6 +269,11 @@ class Janela(threading.Thread):
 			self.e_monit.insert(tk.END, str(vetor.creal))
 		else:
 			self.e_monit.insert(tk.END, '-')
+			
+		if not self.spice.em_exec:
+			self.b_run.configure(bg = 'Red')
+		else:
+			self.b_run.configure(bg = 'Green')
 		
 		self.t_log.after(100, self.temporal) # reagenda
 		
