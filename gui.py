@@ -46,6 +46,10 @@ class Janela(threading.Thread):
 							command=self.ng_vetores)
 		self.b_vetores.grid(row=3, column=0)
 		
+		self.b_plots = tk.Button(self.raiz, text='Lista Plots',
+							command=self.ng_plots)
+		self.b_plots.grid(row=2, column=0)
+		
 		self.b_ver_vetor = tk.Button(self.raiz, text='Imprime Vetor',
 							command=self.ng_vetor)
 		self.b_ver_vetor.grid(row=5, column=2)
@@ -146,7 +150,7 @@ class Janela(threading.Thread):
 		
 	def ng_vetores(self):
 		self.l_vetores.delete(0,tk.END)
-		nomes = self.spice.vectorNames()
+		nomes = self.spice.vectorNames(self.cb_plots.get())
 		for i in nomes:
 			self.l_vetores.insert(tk.END, i)
 		
@@ -164,6 +168,9 @@ class Janela(threading.Thread):
 	def ng_comando(self, event):
 		self.spice.cmd(str(self.e_comando.get()))
 		self.e_comando.delete(0, tk.END)
+		
+	def ng_plots(self):
+		self.cb_plots['values'] = self.spice.plots()
 	
 	def add_vet(self):
 		lista_i = self.l_vetores.curselection()
@@ -182,6 +189,8 @@ class Janela(threading.Thread):
 		arq_gnu = dir + 'gnu_com'
 		lista = self.l_plot.get(0, tk.END)
 		if len(lista) > 0:
+			if self.cb_plots.get() != '':
+				self.spice.cmd('setplot ' + self.cb_plots.get())			
 			comm_spice = 'wrdata ' + arq_data
 			for i in lista:
 				comm_spice = comm_spice + ' ' + str(i)
