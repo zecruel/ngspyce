@@ -6,6 +6,7 @@ import os
 import time
 import Queue
 
+
 # enum dvec_flags {
 #...
 # };
@@ -325,7 +326,7 @@ class app:
 	def plots(self):
 	    """List available plots (result sets)"""
 	    ret = []
-	    plotlist = spice.ngSpice_AllPlots()
+	    plotlist = self.spice.ngSpice_AllPlots()
 	    ii = 0
 	    while True:
 		if not plotlist[ii]:
@@ -340,7 +341,7 @@ class app:
 	    Defaults to the last plot.
 	    """
 	    names = []
-	    if plot is None:
+	    if (plot is None) | (plot == ''):
 		plot = self.spice.ngSpice_CurPlot()
 	    veclist = self.spice.ngSpice_AllVecs(plot)
 	    ii = 0
