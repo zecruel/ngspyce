@@ -5,7 +5,7 @@ import re
 import os
 import time
 import Queue
-
+import subprocess
 
 # enum dvec_flags {
 #...
@@ -126,6 +126,7 @@ class app:
 	em_exec = True #indica que o ngspice esta em execucao
 	
 	def __init__(self):
+		self.dir = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/'
 		#------------------------------------------------------------------------------------
 		# inicializacao
 		
@@ -321,16 +322,18 @@ class app:
 	    # Accept an array of lines, or a multi-line string
 	    if issubclass(type(netlist_lines), str):
 		netlist_lines = netlist_lines.split('\n')
+	    '''
 	    # First line is ignored by the engine
 	    netlist_lines.insert(0, '* First line')
 	    # Add netlist end
 	    if not any((end_regex.match(line) for line in netlist_lines)):
 		netlist_lines.append('.end')
+	    '''
 	    netlist_lines = [line.encode('ascii') for line in netlist_lines]
 	    # Add list terminator
 	    netlist_lines.append(None)
 	    array = (c_char_p * len(netlist_lines))(*netlist_lines)
-	    return spice.ngSpice_Circ(array)
+	    return self.spice.ngSpice_Circ(array)
 
 	def plots(self):
 	    """List available plots (result sets)"""
@@ -365,8 +368,8 @@ class app:
 	    
 	    If names is None, return all available vectors"""
 	    if names is None:
-		plot = spice.ngSpice_CurPlot()
-		names = vectorNames(plot)
+		plot = self.spice.ngSpice_CurPlot()
+		names = self.vectorNames(plot)
 	    return dict(zip(names, map(vector, names)))
 
 	def vector(self, name):
@@ -390,6 +393,32 @@ class app:
 		raise RuntimeError('No valid data in vector')
 	    app.log.put('Fetched vector {} type {}'.format(name, vec.v_type))
 	    return array
+	    
+	def plotar(self, lista, plot = ''):
+		arq_data = self.dir + 'plot'
+		arq_gnu = self.dir + 'gnu_com'
+		
+		if len(lista) > 0:
+			if plot != '':
+				self.cmd('setplot ' + plot)			
+			comm_spice = 'wrdata ' + arq_data
+			for i in lista:
+				comm_spice = comm_spice + ' ' + str(i)
+			self.cmd(comm_spice)
+			
+			p_plot = 'plot '
+			for i in range(len(lista)):
+				p_plot = p_plot + '"' + arq_data + '.data" using '
+				p_plot = p_plot + str(1+i*2) + ':' + str(2+i*2)
+				p_plot = p_plot + ' title "' + str(lista[i]) + '" with lines'
+				if i < (len(lista)-1):
+					p_plot = p_plot + ', \\\n'
+			
+			with open(arq_gnu, 'w') as file_:
+				file_.write(p_plot)
+
+			proc = subprocess.Popen(['E:/documentos/prog/contrade/gnuplot/bin/gnuplot.exe -persist ' + arq_gnu], shell=True,
+					stdin=None, stdout=None, stderr=None, close_fds=True)
     
 if __name__ == "__main__":
     import gui
@@ -409,6 +438,32 @@ if __name__ == "__main__":
     spice.cmd('cd ' + curr_dir_before + '/teste_cm')
     
     spice.cmd('codemodel ./teste.cm')
+    spice.cmd('cd ' + curr_dir_before)
+    circuito = '''*Circuito Basico
+
+.param freq = 60
+
+*Fonte de 3v/60Hz ligada entre o node1 e o GND e defasagem de 90 graus
+Vi node1 0 sin(0 3 freq 0 0 90)
+RL node1 0 10 ;Resistor de 10 ohms ligado entre o node1 e o GND
+
+*passo de amostragem = (32pts na freq atual), tempo total de 35ms
+.TRAN {1/(freq*32)} 35m
+
+.end
+'''
+    verifica = spice.circ(circuito)
+    spice.cmd('bg_run')
+    while spice.spice.ngSpice_running():
+        pass
+    #spice.plotar(['node1',])
+    
+    spice.cmd('source ./tcr1.cir')
+    spice.cmd('bg_run')
+    while spice.spice.ngSpice_running():
+        pass
+    spice.plotar(['i_rms',])
+    
     '''spice.cmd('source ./teste_cm3.cir')
     spice.cmd('bg_run')
     
