@@ -6,6 +6,7 @@ import os
 import time
 import Queue
 import subprocess
+import threading
 
 # enum dvec_flags {
 #...
@@ -123,7 +124,8 @@ class app:
 	log = Queue.Queue() #o log vai para uma pilha queue
 	i_vetores ={} #dicionario que lista o nome e o indice de cada vetor disponivel
 	vetores ={} #dicionario que lista o nome  e a estrutura vecvalues de cada vetor disponivel
-	em_exec = True #indica que o ngspice esta em execucao
+	ng_n_exec = True #indica que o ngspice nao esta em execucao
+	ng_livre = threading.Condition() #indica que o ngspice esta livre
 	
 	def __init__(self):
 		self.dir = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/'
@@ -306,7 +308,10 @@ class app:
 	@CFUNCTYPE(c_int, c_bool, c_int, c_void_p)
 	def bg_running(run, id, ret): 
 	    """indicate if background thread is running"""
-	    app.em_exec = run
+	    app.ng_n_exec = run
+	    if run:
+		    with app.ng_livre:
+			    app.ng_livre.notify()
 	    #print run
 	    return 0
 
@@ -426,54 +431,3 @@ if __name__ == "__main__":
     ''' o codigo abaixo eh somente para teste '''
     spice = app()
     janela = gui.Janela(args=(spice,))
-    
-    curr_dir_before = os.path.dirname(os.path.abspath(__file__)).replace('\\','/')
-    dir_cm = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/lib/ngspice/'
-    spice.cmd('cd ' + dir_cm)
-    spice.cmd('codemodel ./analog.cm')
-    spice.cmd('codemodel ./digital.cm')
-    spice.cmd('codemodel ./spice2poly.cm')
-    spice.cmd('codemodel ./xtradev.cm')
-    spice.cmd('codemodel ./xtraevt.cm')
-    spice.cmd('cd ' + curr_dir_before + '/teste_cm')
-    
-    spice.cmd('codemodel ./teste.cm')
-    spice.cmd('cd ' + curr_dir_before)
-    circuito = '''*Circuito Basico
-
-.param freq = 60
-
-*Fonte de 3v/60Hz ligada entre o node1 e o GND e defasagem de 90 graus
-Vi node1 0 sin(0 3 freq 0 0 90)
-RL node1 0 10 ;Resistor de 10 ohms ligado entre o node1 e o GND
-
-*passo de amostragem = (32pts na freq atual), tempo total de 35ms
-.TRAN {1/(freq*32)} 35m
-
-.end
-'''
-    verifica = spice.circ(circuito)
-    spice.cmd('bg_run')
-    while spice.spice.ngSpice_running():
-        pass
-    #spice.plotar(['node1',])
-    
-    spice.cmd('source ./tcr1.cir')
-    spice.cmd('bg_run')
-    while spice.spice.ngSpice_running():
-        pass
-    spice.plotar(['i_rms',])
-    
-    '''spice.cmd('source ./teste_cm3.cir')
-    spice.cmd('bg_run')
-    
-    while spice.spice.ngSpice_running():
-        pass
-    a = spice.vectorNames()
-    print len(a)
-    for i in range(len(a)):
-	    print a[i]
-    t= spice.vector('time')
-    print len(t)
-    spice.cmd('wrdata teste v(3) v(2)')
-    '''

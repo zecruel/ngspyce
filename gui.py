@@ -4,7 +4,6 @@ import threading
 import tkFileDialog
 import tkMessageBox
 import ttk
-import subprocess
 import os
 
 #-----------------------------------------------------------------------------------------
@@ -54,7 +53,7 @@ class Janela(threading.Thread):
 		
 		#------ botoes de execucao ----------
 		
-		self.f_exec = ttk.Frame(self.raiz)
+		self.f_exec = tk.Frame(self.raiz)
 		self.f_exec.grid(row=1, column=1)
 		self.b_exec = tk.Button(self.f_exec, text='Executa',
 							command=self.ng_exec)
@@ -73,7 +72,7 @@ class Janela(threading.Thread):
 		
 		#------------------------------------------
 		#Cria a area de texto de log
-		self.f_log = ttk.Frame(self.raiz)
+		self.f_log = tk.Frame(self.raiz)
 		self.f_log.grid(row=7, column=0, columnspan=6, rowspan=2)
 		self.t_log_s = tk.Scrollbar(self.f_log)
 		self.t_log_s.grid(row=0, column=1, sticky=tk.W+tk.E+tk.N+tk.S)
@@ -108,7 +107,7 @@ class Janela(threading.Thread):
 		self.e_monit.delete(0, tk.END)
 		
 		#------------plots disponiveis
-		self.f_plots = ttk.Frame(self.raiz)
+		self.f_plots = tk.Frame(self.raiz)
 		self.f_plots.grid(row=3, column=0)
 		self.b_plots = tk.Button(self.f_plots, text='Lista Plots',
 							command=self.ng_plots)
@@ -119,7 +118,7 @@ class Janela(threading.Thread):
 		
 		#-------------------------------------------
 		# Ferramentas de plotagem
-		self.f_plot = ttk.Frame(self.raiz)
+		self.f_plot = tk.Frame(self.raiz)
 		self.f_plot.grid(row=3, column=1, columnspan=3, rowspan=2)
 		
 		self.b_vetores = tk.Button(self.f_plot, text='Lista Vetores',
@@ -206,31 +205,10 @@ class Janela(threading.Thread):
 			self.l_plot.delete(ind)
 			
 	def plotar(self):
-		dir = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/'
-		arq_data = dir + 'plot'
-		arq_gnu = dir + 'gnu_com'
 		lista = self.l_plot.get(0, tk.END)
 		if len(lista) > 0:
-			if self.cb_plots.get() != '':
-				self.spice.cmd('setplot ' + self.cb_plots.get())			
-			comm_spice = 'wrdata ' + arq_data
-			for i in lista:
-				comm_spice = comm_spice + ' ' + str(i)
-			self.spice.cmd(comm_spice)
+			self.spice.plotar(lista,self.cb_plots.get())			
 			
-			p_plot = 'plot '
-			for i in range(len(lista)):
-				p_plot = p_plot + '"' + arq_data + '.data" using '
-				p_plot = p_plot + str(1+i*2) + ':' + str(2+i*2)
-				p_plot = p_plot + ' title "' + str(lista[i]) + '" with lines'
-				if i < (len(lista)-1):
-					p_plot = p_plot + ', \\\n'
-			
-			with open(arq_gnu, 'w') as file_:
-				file_.write(p_plot)
-
-			proc = subprocess.Popen(['E:/documentos/prog/contrade/gnuplot/bin/gnuplot.exe -persist ' + arq_gnu], shell=True,
-					stdin=None, stdout=None, stderr=None, close_fds=True)
 	# -----------------------------------------
 	#Comando de abrir arquivo
 	#------------------------------------------
@@ -270,7 +248,7 @@ class Janela(threading.Thread):
 		else:
 			self.e_monit.insert(tk.END, '-')
 			
-		if not self.spice.em_exec:
+		if not self.spice.ng_n_exec:
 			self.b_run.configure(bg = 'Red')
 		else:
 			self.b_run.configure(bg = 'Green')
