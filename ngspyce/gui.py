@@ -40,7 +40,7 @@ class Janela(threading.Thread):
 		self.raiz.protocol("WM_DELETE_WINDOW", self.sai)
 		
 		#------------------------------------------
-		#Cria os botıes
+		#Cria os bot√µes
 		
 		self.b_abre_circ = tk.Button(self.raiz, text='Circuito',
 							command=self.ng_abre_circ)
