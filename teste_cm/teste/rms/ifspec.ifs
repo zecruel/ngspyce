@@ -1,0 +1,38 @@
+
+NAME_TABLE:
+
+C_Function_Name:       cm_rms
+Spice_Model_Name:      rms
+Description:           "RMS sample meter"
+
+
+PORT_TABLE:
+
+Port_Name:             in                   out 
+Description:           "input"              "output"
+Direction:             in                   out 
+Default_Type:          v                    v
+Allowed_Types:         [v,vd,i,id,vnam]     [v,vd,i,id] 
+Vector:                 no                   no
+Vector_Bounds:          -                    -  
+Null_Allowed:          no                   no 
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:     freq                            pontos
+Description:          "frequencia"      "pontos de amostragem por ciclo"
+Data_Type:              real                               int
+Default_Value:          60                                32
+Limits:                  [0.001 -]                        [2 -]
+Vector:                     no                                no
+Vector_Bounds:          -                                 -
+Null_Allowed:           yes                              yes
+
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:       hist                   pos                              prox_t                  hist_t                      saida
+Data_Type:             pointer               pointer                           pointer                 pointer                     pointer
+Description:           "historico"      "posicao buffer circular"   "proximo tempo"        "historico tempos"     "memoria de saida"
+

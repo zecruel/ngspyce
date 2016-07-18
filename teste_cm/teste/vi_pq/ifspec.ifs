@@ -1,0 +1,43 @@
+
+NAME_TABLE:
+
+C_Function_Name:       cm_vi_pq
+Spice_Model_Name:      vi_pq
+Description:           "PQ meter"
+
+
+PORT_TABLE:
+
+Port_Name:                 in_v                     in_i               out_p          out_q
+Description:                "in_v"                 "in_v"           "out_p"         "out_q"
+Direction:                      in                        in                out               out
+Default_Type:                 v                        v                   v                 v
+Allowed_Types:     [v,vd,i,id,vnam]   [v,vd,i,id,vnam]  [v,vd,i,id]     [v,vd,i,id]
+Vector:                           no                     no                  no                no
+Vector_Bounds:               -                        -                    -                   -
+Null_Allowed:                 no                      no                  yes              yes
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:     freq                            pontos
+Description:          "frequencia"      "pontos de amostragem por ciclo"
+Data_Type:              real                               int
+Default_Value:          60                                32
+Limits:                  [0.001 -]                        [2 -]
+Vector:                     no                                no
+Vector_Bounds:          -                                 -
+Null_Allowed:           yes                              yes
+
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:              pos                              prox_t                     saida_p                  saida_q
+Data_Type:                     pointer                           pointer                    pointer                   pointer
+Description:             "posicao buffer circular"   "proximo tempo"     "memoria de saida"      "memoria de saida"
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:       hist_v                      hist_v90             hist_i
+Data_Type:             pointer                         pointer             pointer
+Description:           "historico"                    "historico"          "historico"
