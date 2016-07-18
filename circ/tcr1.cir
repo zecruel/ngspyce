@@ -1,0 +1,114 @@
+*TCR - Tyristor Controled Reactor
+
+* .------------------------------.
+* |      Parametros Gerais       |
+* `------------------------------'
+.param freq = 60
+.param cond = 1 ; corrente de conducao minima
+.param v_min = 1k
+
+* .---------------------------------.
+* | Descricao do circuito principal |
+* `---------------------------------'
+*Fonte de 18.5kV/60Hz ligada entre o n_sist1 e o GND
+*condicao inicial  = 0V
+vi n_fonte 0 dc 0 sin(0 26.163k freq 0 0)
+*varia o angulo de disparo de 165 a 90
+vang n_ang 0 pwl(0 165 4 90)
+
+xtcr1 n_fonte 0 n_ang tcr
+
+amed %vnam(vi) i_rms medidor
+rmed i_rms 0 1k
+
+.model medidor rms(freq = {freq}, pontos = 32)
+
+* .---------------------------------------.
+* |Subcircuito: TCR                       |
+* |Modela um TCR completo monofasico      |
+* `---------------------------------------'
+.subckt tcr n_sist1 n_sist2 ang
+
+*----Valvula----------------------------------
+*tiristor semiciclo positivo
+sgatep n_sist1 n_d_p gate 0 chave1 off ;chave que inicia a conducao -P
+scorrp n_sist1 n_d_p nverp 0 chave1 off ;chave que sela a conducao - P
+dp n_d_p nsensorp diodo1
+
+vsensorp nsensorp n_carga 0
+
+econdp nverp 0 value = {(i(vsensorp))>cond} ;avalia o modulo de corrente
+rcondp nverp 0 1
+
+*tiristor semiciclo negativo
+sgaten n_sist1 n_d_n gate 0 chave1 off ;chave que inicia a conducao - N
+scorrn n_sist1 n_d_n nvern 0 chave1 off ;chave que sela a conducao - N
+dn nsensorn n_d_n diodo1
+
+vsensorn nsensorn n_carga 0
+
+econdn nvern 0 value = {(i(vsensorn))<-cond} ;avalia o modulo de corrente
+rcondn nvern 0 1
+
+rgate gate 0 10k
+
+*--snuber-------------------------------------
+rs n_sist1 n_snuber 1k
+cs n_snuber n_carga 0.11u
+
+*----resistencia de carga - paralelo ao indutor---------------
+rpar n_carga n_sist2 10meg ;Resistor de 10mega ohms ligado entre o n_carga e o GND
+
+*----indutor de carga----------------------------------------------
+Lprinc n_carga n_perda 13.44m ;indutancia de 13.44mH
+rperda n_perda n_sist2 0.011	;resistencia de 0.011 ohm em serie
+
+*----circuito de controle-------------------------
+rang ang 0 1k ;entrada de angulo desejado
+
+* pulso de sincronismo com a tensao da rede
+ereset nreset 0 value = {abs(v(n_sist1,n_sist2)) < v_min}
+*--------------- Integrador ----------------
+* gera o sinal de rampa (dente de serra)
+* Constantes para integracao -> R1, C1 e Vconst
+* A saida do integradaor pode ser determinada por Vo = -Vconst * t / (C1 * R1)
+r1 nconst nei 1k
+c1 nei nint 1u
+vconst nconst 0 {-180*1m*freq*2}
+* chave que reseta o integrador ->sincronismo
+sreset nei nint nreset 0 chave2 off
+* modela um Amp Op Rin = 1meg, ganho = 100k, Rout = 1 ohm
+rent nconst 0 1meg
+eganho nsai 0 nei 0 100k
+rsai nsai nint 1
+*-------------- fim do integrador --------
+*comparador de saida-> integrador > angulo
+ecomp gate 0 table {v(nint, ang)} (-1m, 0) (1m, 1)
+
+* .--------------------------.
+* | Descricao de componentes |
+* `--------------------------'
+
+.model chave1 sw vt=0.5 ron=0.01 roff=10meg
+.model chave2 sw vt=0.5 ron=30 roff=100k
+.model diodo1 d IS=1e-14 n=1
+
+.ends
+
+* .--------------------------------------.
+* | Parametros de analise de Transitorio |
+* `--------------------------------------'
+*ATENCAO: Sempre considerar as condicoes iniciais (parametro uic)
+*passo de amostragem = (360pts na freq atual), tempo total de 4s
+.save all
+.TRAN {1/(freq*360)} 4 uic
+
+* .------------------------------------.
+* | Bloco de controle do Interpretador |
+* `------------------------------------'
+
+
+* .--------------------------------------.
+* |             ---- FIM ---             |
+* `--------------------------------------'
+.end
