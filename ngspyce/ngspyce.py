@@ -126,6 +126,7 @@ class app:
 	vetores ={} #dicionario que lista o nome  e a estrutura vecvalues de cada vetor disponivel
 	ng_n_exec = True #indica que o ngspice nao esta em execucao
 	ng_livre = threading.Condition() #indica que o ngspice esta livre
+	arq_apagar = re.compile('(gnu_com)|(plot.*\.data)')
 	
 	def __init__(self):
 		self.dir = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/'
@@ -399,9 +400,9 @@ class app:
 	    app.log.put('Fetched vector {} type {}'.format(name, vec.v_type))
 	    return array
 	    
-	def plotar(self, lista, plot = ''):
-		arq_data = self.dir + 'plot'
-		arq_gnu = self.dir + 'gnu_com'
+	def plotar(self, lista, plot = '', num = 0):
+		arq_data = self.dir + 'plot' + str(num)
+		arq_gnu = self.dir + 'gnu_com' + str(num)
 		
 		if len(lista) > 0:
 			if plot != '':
@@ -411,7 +412,8 @@ class app:
 				comm_spice = comm_spice + ' ' + str(i)
 			self.cmd(comm_spice)
 			
-			p_plot = 'plot '
+			p_plot = 'set format y "%.2s %c"\n'
+			p_plot = p_plot + 'plot '
 			for i in range(len(lista)):
 				p_plot = p_plot + '"' + arq_data + '.data" using '
 				p_plot = p_plot + str(1+i*2) + ':' + str(2+i*2)
@@ -424,6 +426,12 @@ class app:
 
 			proc = subprocess.Popen(['E:/documentos/prog/contrade/gnuplot/bin/gnuplot.exe -persist ' + arq_gnu], shell=True,
 					stdin=None, stdout=None, stderr=None, close_fds=True)
+			#time.sleep(0.2)
+			
+	def limpa_plot(self):
+		for f in os.listdir(self.dir):
+			if self.arq_apagar.match(f):
+				os.remove(os.path.join(self.dir, f))
     
 if __name__ == "__main__":
     import gui
@@ -431,3 +439,4 @@ if __name__ == "__main__":
     ''' o codigo abaixo eh somente para teste '''
     spice = app()
     janela = gui.Janela(args=(spice,))
+    spice.limpa_plot()

@@ -25,6 +25,8 @@ class Janela(threading.Thread):
 		#------------- variaveis internas ---------------
 		
 		self.spice = self.args[0] #objeto que controla o NGSpice rodando em segundo plano
+		
+		self.num_plot = 0 #numero da janela de plotagem
 		#------------------------------------------------------------
 		
 		self.start()
@@ -40,16 +42,11 @@ class Janela(threading.Thread):
 		self.raiz.protocol("WM_DELETE_WINDOW", self.sai)
 		
 		#------------------------------------------
-		#Cria os botões
+		#Cria o botao de abrir circuito
 		
 		self.b_abre_circ = tk.Button(self.raiz, text='Circuito',
 							command=self.ng_abre_circ)
 		self.b_abre_circ.grid(row=1, column=0)
-		
-		
-		
-		
-		
 		
 		#------ botoes de execucao ----------
 		
@@ -125,9 +122,11 @@ class Janela(threading.Thread):
 							command=self.ng_vetores)
 		self.b_vetores.grid(row=0, column=0)
 		
-		self.b_ver_vetor = tk.Button(self.f_plot, text='Imprime Vetor',
-							command=self.ng_vetor)
-		self.b_ver_vetor.grid(row=2, column=2)
+		#self.b_ver_vetor = tk.Button(self.f_plot, text='Imprime Vetor', command=self.ng_vetor)
+		#self.b_ver_vetor.grid(row=2, column=2)
+		
+		self.b_limpa = tk.Button(self.f_plot, text='Limpa dados', command=self.spice.limpa_plot)
+		self.b_limpa.grid(row=2, column=2)
 		
 		self.b_add_vetor = tk.Button(self.f_plot, text='->',
 							command=self.add_vet)
@@ -207,8 +206,8 @@ class Janela(threading.Thread):
 	def plotar(self):
 		lista = self.l_plot.get(0, tk.END)
 		if len(lista) > 0:
-			self.spice.plotar(lista,self.cb_plots.get())			
-			
+			self.spice.plotar(lista,self.cb_plots.get(), self.num_plot)			
+			self.num_plot += 1
 	# -----------------------------------------
 	#Comando de abrir arquivo
 	#------------------------------------------
