@@ -1,0 +1,37 @@
+
+NAME_TABLE:
+
+C_Function_Name:       cm_pfc
+Spice_Model_Name:      pfc
+Description:           "Phase-fired controller"
+
+
+PORT_TABLE:
+
+Port_Name:                 v_ref                     ang               trig
+Description:       "reference voltage"     "fire angle"    "trigger signal"
+Direction:                      in                        in                out
+Default_Type:                 v                        v                   v
+Allowed_Types:     [v,vd,i,id,vnam]   [v,vd,i,id,vnam]  [v,vd,i,id]
+Vector:                           no                     no                  no
+Vector_Bounds:               -                        -                    -
+Null_Allowed:                 no                      no                  yes
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:     freq                            v_min
+Description:          "frequencia"             "level of sync"
+Data_Type:              real                               real
+Default_Value:          60                                 1
+Limits:                  [0.001 -]                      [1e-6 -]
+Vector:                     no                                no
+Vector_Bounds:          -                                 -
+Null_Allowed:           yes                              yes
+
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:              rampa                 t_ant
+Data_Type:                     pointer                  pointer
+Description:             "valor da integral"       "tempo anterior"

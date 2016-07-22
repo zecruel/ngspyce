@@ -1,0 +1,37 @@
+
+NAME_TABLE:
+
+C_Function_Name:       cm_scr
+Spice_Model_Name:      scr
+Description:           "Silicon Controlled Rectifier"
+
+
+PORT_TABLE:
+
+Port_Name:                    ak                   gate
+Description:              "terminals"           "gate"
+Direction:                      inout                   in
+Default_Type:                 hd                      v
+Allowed_Types:              [hd]         [v,vd,i,id,vnam]
+Vector:                           no                     no
+Vector_Bounds:               -                        -
+Null_Allowed:                 no                      no
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:             ron                             roff
+Description:                   "R on"                          "R off"
+Data_Type:                      real                             real
+Default_Value:                0.001                           1e9
+Limits:                          [1e-9 -]                      [1e12 -]
+Vector:                            no                               no
+Vector_Bounds:                 -                                 -
+Null_Allowed:                   yes                             yes
+
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:              res
+Data_Type:                     pointer
+Description:                 "resistencia"
