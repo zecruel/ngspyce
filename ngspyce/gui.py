@@ -103,6 +103,16 @@ class Janela(threading.Thread):
 		self.e_monit.grid(row=2, column=1, sticky=tk.W)
 		self.e_monit.delete(0, tk.END)
 		
+		tk.Label(self.f_monit, text='ref:').grid(row=3, column=0, sticky=tk.W)
+		self.e_ref = tk.Entry(self.f_monit)
+		self.e_ref.grid(row=4, column=0, sticky=tk.W)
+		self.e_ref.delete(0, tk.END)
+		
+		tk.Label(self.f_monit, text='status:').grid(row=3, column=1, sticky=tk.W)
+		self.e_status = tk.Entry(self.f_monit)
+		self.e_status.grid(row=4, column=1, sticky=tk.W)
+		self.e_status.delete(0, tk.END)
+		
 		#------------plots disponiveis
 		self.f_plots = tk.Frame(self.raiz)
 		self.f_plots.grid(row=3, column=0)
@@ -251,6 +261,11 @@ class Janela(threading.Thread):
 			self.b_run.configure(bg = 'Red')
 		else:
 			self.b_run.configure(bg = 'Green')
+			
+		self.e_ref.delete(0, tk.END)
+		self.e_ref.insert(tk.END, self.spice.reference)
+		self.e_status.delete(0, tk.END)
+		self.e_status.insert(tk.END, self.spice.status)
 		
 		self.t_log.after(100, self.temporal) # reagenda
 		

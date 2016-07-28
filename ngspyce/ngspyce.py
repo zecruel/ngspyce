@@ -127,6 +127,8 @@ class app:
 	ng_n_exec = True #indica que o ngspice nao esta em execucao
 	ng_livre = threading.Condition() #indica que o ngspice esta livre
 	arq_apagar = re.compile('(gnu_com)|(plot.*\.data)')
+	status = ''
+	reference = ''
 	
 	def __init__(self):
 		self.dir = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/'
@@ -227,15 +229,20 @@ class app:
 	    """Callback for libngspice to print a message"""	    
 	    if output.startswith(b'stderr'):
 		app.log.put('ALERTA: '+ output[7:].decode('ascii'))
-	    else:
+	    elif output.startswith(b'stdout'):
 		app.log.put(output[7:].decode('ascii'))
+	    elif output.find('Reference value'):
+		app.reference = output.replace('Reference value : ','')
+	    else:
+		app.log.put(output.decode('ascii'))
 	    return 0
 	    
 	@staticmethod
 	@CFUNCTYPE(c_int, c_char_p, c_int, c_void_p)
 	def statfcn(status, id, ret): 
 	    """Callback for libngspice to report the current status"""
-	    app.log.put(status.decode('ascii'))
+	    #app.log.put(status.decode('ascii'))
+	    app.status = status.decode('ascii')
 	    return 0
 	    
 	@staticmethod
@@ -420,15 +427,16 @@ class app:
 				p_plot = p_plot + ' title "' + str(lista[i]) + '" with lines'
 				if i < (len(lista)-1):
 					p_plot = p_plot + ', \\\n'
-			
+			p_plot = p_plot + '\nquit'
 			with open(arq_gnu, 'w') as file_:
 				file_.write(p_plot)
 
-			proc = subprocess.Popen(['E:/documentos/prog/contrade/gnuplot/bin/gnuplot.exe -persist ' + arq_gnu], shell=True,
+			proc = subprocess.Popen('E:/documentos/prog/contrade/gnuplot/bin/gnuplot.exe -persist ' + arq_gnu, shell=True,
 					stdin=None, stdout=None, stderr=None, close_fds=True)
 			#time.sleep(0.2)
 			
 	def limpa_plot(self):
+		proc = subprocess.Popen('taskkill /f /im "gnuplot.exe"', shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
 		for f in os.listdir(self.dir):
 			if self.arq_apagar.match(f):
 				os.remove(os.path.join(self.dir, f))
