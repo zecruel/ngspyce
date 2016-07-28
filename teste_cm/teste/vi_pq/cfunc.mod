@@ -130,4 +130,8 @@ cm_vi_pq(ARGS)
 	
 	OUTPUT(out_p) = *saida_p;	//saida via variavel de retensao P
 	OUTPUT(out_q) = *saida_q;	//saida via variavel de retensao Q
+	PARTIAL(out_p,in_i) = 0.0;
+	PARTIAL(out_q,in_i) = 0.0;
+	PARTIAL(out_p,in_v) = 0.0;
+	PARTIAL(out_q,in_v) = 0.0;
 }

@@ -1,0 +1,49 @@
+
+NAME_TABLE:
+
+C_Function_Name:       cm_c_tsc
+Spice_Model_Name:      c_tsc
+Description:           "Tyristor Switched Capacitor controller"
+
+
+PORT_TABLE:
+
+Port_Name:                 v_ref                     v_cap
+Description:       "reference voltage"    "capacitor voltage"
+Direction:                      in                        in
+Default_Type:                 v                        v
+Allowed_Types:     [v,vd,i,id,vnam]   [v,vd,i,id,vnam]
+Vector:                           no                     no
+Vector_Bounds:               -                        -
+Null_Allowed:                 no                      no
+
+
+PORT_TABLE:
+
+Port_Name:                 comm                  trig
+Description:            "command"        "trigger signal"
+Direction:                      in                       out
+Default_Type:                 v                        v
+Allowed_Types:     [v,vd,i,id,vnam]    [v,vd,i,id]
+Vector:                           no                     no
+Vector_Bounds:               -                        -
+Null_Allowed:                 no                      yes
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:     freq                            v_min                v_nom
+Description:          "frequencia"             "level of sync"      "nominal voltage"
+Data_Type:              real                               real                    real
+Default_Value:          60                                 1                        1e3
+Limits:                  [0.001 -]                      [1e-6 -]                [1e-6 -]
+Vector:                     no                                no                      no
+Vector_Bounds:          -                                 -                         -
+Null_Allowed:           yes                              yes                      yes
+
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:              rampa                 t_ant                   cond
+Data_Type:                     pointer                  pointer                pointer
+Description:             "valor da integral"       "tempo anterior"   "last output"

@@ -115,4 +115,5 @@ cm_rms(ARGS)
 	} //------------------------------------------------------------------
 	
 	OUTPUT(out) = *saida;	//saida via variavel de retensao
+	PARTIAL(out,in) = 0.0;
 }

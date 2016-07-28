@@ -10,35 +10,40 @@ For triggering tirystors (SCRs) in AC aplications
 
 /*=== CONSTANTS ========================*/
 
-char *alloc_error_pfc = "\n**** Error ****\nPFC: Error allocating block storage \n";
+char *alloc_error_c_tsc = "\n**** Error ****\nC_tsc: Error allocating block storage \n";
 
 /*=== Rotina Principal ===*/
 
 void
-cm_pfc(ARGS)
+cm_c_tsc(ARGS)
 {	
 	double *rampa;	// calculo da rampa, via integracao
 	double *t_ant; 		//tempo anterior
 	double d_dt;		//derivada parcial necessaria para integracao
+	double *cond;		//memoria de retensao da saida
 
 	if (INIT == 1) {	//primeira chamada do modulo
 		// aloca e inicializa a memoria das variaveis
 		STATIC_VAR(rampa) = calloc(1, sizeof(double));
 		STATIC_VAR(t_ant) = calloc(1, sizeof(double));
+		STATIC_VAR(cond) = calloc(1, sizeof(double));
 		
 		rampa = STATIC_VAR(rampa);
 		t_ant = STATIC_VAR(t_ant);
+		cond = STATIC_VAR(cond);
 		
 		// se houver erro, envia mensagem para terminal
-		if ((rampa == NULL) || (t_ant == NULL)){ 
-			cm_message_send(alloc_error_pfc); }
+		if ((rampa == NULL) || (t_ant == NULL) || (cond == NULL)){ 
+			cm_message_send(alloc_error_c_tsc); }
 		
 		*rampa = 0.0; //inicializa o integrador
 		*t_ant = TIME; //incializa a marca de tempo
+		*cond = 0.0;	//zera a saida
 	}
 	
 	rampa = STATIC_VAR(rampa);
 	t_ant = STATIC_VAR(t_ant);
+	cond = STATIC_VAR(cond);
 	
 	//----------- gera a rampa de comparacao -----------
 	d_dt = TIME - *t_ant; // calcula o delta t
@@ -50,11 +55,12 @@ cm_pfc(ARGS)
 	*t_ant = TIME; //guarda a marca de tempo para a proxima iteracao
 	//------------------------------------------------------
 	
-	//gera os pulsos de disparo pela comparacao da rampa com o anulo desejado
-	if (INPUT(ang) >= *rampa) {
-		OUTPUT(trig) = 0.0;	}//saida
-	else {
-		OUTPUT(trig) = 1.0;	}//saida
-	PARTIAL(trig,v_ref) = 0.0;
-	PARTIAL(trig,ang) = 0.0;
+	if ((*rampa >= 90.0) && 
+	(fabs(INPUT(v_ref)-INPUT(v_cap)) < PARAM(v_nom)) &&
+	(INPUT(comm)>0)) {
+		*cond = 1.0;	}//saida
+	if ((INPUT(comm)<=0) && (*cond == 1.0)){
+		*cond = 0.0;	}//saida
+	
+	OUTPUT(trig) = *cond;
 }
