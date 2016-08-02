@@ -1,0 +1,43 @@
+
+NAME_TABLE:
+
+C_Function_Name:       cm_seq
+Spice_Model_Name:      seq
+Description:           "3-phase signal to sequential parameters"
+
+
+PORT_TABLE:
+
+Port_Name:                    in              out_1              out_2
+Description:                   "in"           "out_1"             "out_2"
+Direction:                       in               out                   out
+Default_Type:                 v                 v                    v
+Allowed_Types:     [v,vd,i,id,vnam]     [v,vd,i,id]       [v,vd,i,id]
+Vector:                           yes                yes                 yes
+Vector_Bounds:              [3 3]              [3 3]                 [3 3]
+Null_Allowed:                 no                  yes                  yes
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:     freq                            pontos                                    r_p
+Description:          "frequencia"      "pontos de amostragem por ciclo"   "retangular/polar"
+Data_Type:              real                               int                                      boolean
+Default_Value:          60                                32                                       TRUE
+Limits:                  [0.001 -]                        [2 -]                                         -
+Vector:                     no                                no                                         no
+Vector_Bounds:          -                                 -                                            -
+Null_Allowed:           yes                              yes                                         yes
+
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:              pos                              prox_t                     saida_1                  saida_2
+Data_Type:                     pointer                           pointer                    pointer                   pointer
+Description:             "posicao buffer circular"   "proximo tempo"     "memoria de saida"      "memoria de saida"
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:       hist
+Data_Type:             pointer
+Description:           "historico"
